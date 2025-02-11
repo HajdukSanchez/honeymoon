@@ -42,7 +42,7 @@ struct InfoView: View {
 }
 
 
-struct AppInfoView: View {
+private struct AppInfoView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10){
             RowAppInfoView(itemOne: "Application", itemTwo: "Honeymoon")
@@ -55,7 +55,7 @@ struct AppInfoView: View {
     }
 }
 
-struct CreditsInfoView: View {
+private struct CreditsInfoView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10){
             HStack {
@@ -74,7 +74,7 @@ struct CreditsInfoView: View {
     }
 }
 
-struct RowAppInfoView: View {
+private struct RowAppInfoView: View {
     
     // MARK: - Properties
     var itemOne: String
