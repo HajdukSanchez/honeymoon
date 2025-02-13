@@ -8,6 +8,10 @@
 import SwiftUI
 
 struct InfoView: View {
+    
+    // MARK: - Properties
+    @Environment(\.dismiss) var dismissSheet
+    
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(alignment: .center, spacing: 20) {
@@ -23,7 +27,7 @@ struct InfoView: View {
                 CreditsInfoView()
                 Spacer(minLength: 10)
                 Button {
-                    // TODO: add action
+                    self.dismissSheet()
                 } label: {
                     Text("Continue".uppercased())
                 }
@@ -41,7 +45,7 @@ struct InfoView: View {
     InfoView()
 }
 
-
+// MARK: - AppInfoView
 private struct AppInfoView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10){
@@ -55,6 +59,7 @@ private struct AppInfoView: View {
     }
 }
 
+// MARK: - CreditsInfoView
 private struct CreditsInfoView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10){
@@ -74,6 +79,7 @@ private struct CreditsInfoView: View {
     }
 }
 
+// MARK: - RowAppInfoView
 private struct RowAppInfoView: View {
     
     // MARK: - Properties
@@ -93,4 +99,5 @@ private struct RowAppInfoView: View {
     }
 }
 
+// MARK: - Photographers variable
 private var photographers = "Shifaaz Shamoon (Maldives), Grillot Edouard (France), Evan Wise (Greece), Christoph Schulz (United Arab Emirates), Andrew Coelho (USA), Damiano Baschiera (Italy), Daniel Olah (Hungary), Andrzej Rusinowski (Poland), Lucas Miguel (Slovenia), Florencia Potter (Spain), Ian Simmonds (USA), Ian Keefe (Canada), Denys Nevozhai (Thailand), David Köhler (Italy), Andre Benz (USA), Alexandre Chambon (South Korea), Roberto Nickson (Mexico), Ajit Paul Abraham (UK), Jeremy Bishop (USA), Davi Costa (Brazil), Liam Pozz (Australia)"

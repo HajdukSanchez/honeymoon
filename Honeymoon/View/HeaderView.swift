@@ -12,16 +12,20 @@ struct HeaderView: View {
     // MARK: - Porperties
     
     @Binding var showGuideView: Bool
+    @Binding var showInfoView: Bool
     
     var body: some View {
         HStack {
             Button {
-                
+                self.showInfoView.toggle()
             } label: {
                 Image(systemName: "info.circle")
                     .font(.system(size: 24, weight: .regular))
             }
             .tint(.primary)
+            .sheet(isPresented: $showInfoView) {
+                InfoView()
+            }
             Spacer()
             Image("logo-honeymoon-pink")
                 .resizable()
@@ -44,5 +48,5 @@ struct HeaderView: View {
 }
 
 #Preview {
-    HeaderView(showGuideView: .constant(false))
+    HeaderView(showGuideView: .constant(false), showInfoView: .constant(false))
 }
