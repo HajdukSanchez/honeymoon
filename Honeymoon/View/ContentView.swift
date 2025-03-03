@@ -14,6 +14,7 @@ struct ContentView: View {
     @State var showGuide: Bool = false
     @State var showInfo: Bool = false
     @GestureState private var dragState = DragState.inactive
+    private var dragAreaThreshold: CGFloat = 65.0
     
     // MARK: - Cards
     var cardViews: [CardView] = {
@@ -35,6 +36,14 @@ struct ContentView: View {
         return index == 0
     }
     
+    private func showDislikeSymbol() -> Bool {
+        return self.dragState.translation.width < -self.dragAreaThreshold
+    }
+    
+    private func showLikeSymbol() -> Bool {
+        return self.dragState.translation.width > self.dragAreaThreshold
+    }
+    
     var body: some View {
         VStack {
             HeaderView(showGuideView: $showGuide, showInfoView: $showInfo)
@@ -51,6 +60,20 @@ struct ContentView: View {
                         // Card with animation and gesture interaction (top cad)
                         view
                             .zIndex(1)
+                            .overlay(content: {
+                                ZStack {
+                                    // Symbol on the left
+                                    Image(systemName: "x.circle")
+                                        .modifier(SymbolModifier())
+                                        .foregroundStyle(.red)
+                                        .opacity(self.showDislikeSymbol() ? 1 : 0)
+                                    // Symbol on the right
+                                    Image(systemName: "heart.circle")
+                                        .modifier(SymbolModifier())
+                                        .foregroundStyle(.green)
+                                        .opacity(self.showLikeSymbol() ? 1 : 0)
+                                }
+                            })
                             .offset(
                                 x: self.dragState.translation.width,
                                 y: self.dragState.translation.height
