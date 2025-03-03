@@ -13,6 +13,7 @@ struct ContentView: View {
     @State var showAlert: Bool = false
     @State var showGuide: Bool = false
     @State var showInfo: Bool = false
+    @GestureState private var dragState = DragState.inactive
     
     // MARK: - Cards
     var cardViews: [CardView] = {
@@ -37,17 +38,51 @@ struct ContentView: View {
     var body: some View {
         VStack {
             HeaderView(showGuideView: $showGuide, showInfoView: $showInfo)
+                .opacity(self.dragState.isDragging ? 0.0 : 1.0)
+                .animation(self.dragState.isDragging ? nil : .default, value: self.dragState.isDragging)
             Spacer()
             // List of cards
             ZStack {
                 ForEach(cardViews) { view in
-                    view
-                        .zIndex(self.isTopCard(cardView: view) ? 1 : 0)
+                    if !self.isTopCard(cardView: view) {
+                        // Card behind the animated one
+                        view.zIndex(0)
+                    } else {
+                        // Card with animation and gesture interaction (top cad)
+                        view
+                            .zIndex(1)
+                            .offset(
+                                x: self.dragState.translation.width,
+                                y: self.dragState.translation.height
+                            )
+                            .scaleEffect(self.dragState.isDragging ? 0.85 : 1.0)
+                            .rotationEffect(Angle(degrees: Double(self.dragState.translation.width / 12)))
+                            .animation(
+                                .interpolatingSpring(stiffness: 120, damping: 120),
+                                value: self.dragState.isDragging
+                            )
+                            .gesture(
+                                LongPressGesture(minimumDuration: 0.01)
+                                    .sequenced(before: DragGesture())
+                                    .updating(self.$dragState, body: { value, state, transaction in
+                                        switch value {
+                                        case .first(true):
+                                            state = .pressing
+                                        case .second(true, let drag):
+                                            state = .dragging(translation: drag?.translation ?? .zero)
+                                        default:
+                                            break
+                                        }
+                                    })
+                            )
+                    }
                 }
             }
             .padding(.horizontal)
             Spacer()
             FooterView(showBookingAlert: $showAlert)
+                .opacity(self.dragState.isDragging ? 0.0 : 1.0)
+                .animation(self.dragState.isDragging ? nil : .default, value: self.dragState.isDragging)
         }
         .alert(isPresented: $showAlert) {
             Alert(
@@ -61,4 +96,41 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+}
+
+// MARK: - DragState
+private enum DragState {
+    case inactive
+    case pressing
+    case dragging(translation: CGSize)
+    
+    // Return a CGSize translation based on the state
+    var translation: CGSize {
+        switch self {
+        case .inactive, .pressing:
+            return .zero
+        case .dragging(let translation):
+            return translation
+        }
+    }
+    
+    // Get if the user has a dragging state
+    var isDragging: Bool {
+        switch self {
+        case .inactive, .pressing:
+            return false
+        case .dragging:
+            return true
+        }
+    }
+    
+    // Get if the user has a pressing state
+    var isPressing: Bool {
+        switch self {
+        case .inactive:
+            return false
+        case .pressing, .dragging:
+            return true
+        }
+    }
 }
