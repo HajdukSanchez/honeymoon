@@ -13,7 +13,8 @@ struct ContentView: View {
     @State var showAlert: Bool = false
     @State var showGuide: Bool = false
     @State var showInfo: Bool = false
-    @State private var lastCardIndex: Int = 1 // Strats in 1 because we start show 2 cards
+    @State private var lastCardIndex: Int = 1 // Starts in 1 because we start show 2 cards
+    @State private var cardRemovalTransition: AnyTransition = .trailingBottom
     @GestureState private var dragState = DragState.inactive
     private var dragAreaThreshold: CGFloat = 65.0
     
@@ -115,6 +116,22 @@ struct ContentView: View {
                                             break
                                         }
                                     })
+                                    .onChanged({ value in
+                                        // If user perform a drag gesture, get the value on the drag? value
+                                        guard case .second(true, let drag?) = value else {
+                                            return
+                                        }
+                                        
+                                        let dragWith = drag.translation.width
+                                        
+                                        // Validate the user removal to update the transition
+                                        if self.userReachesLikeAreaThreshold(withDrag: dragWith) {
+                                            self.cardRemovalTransition = .trailingBottom
+                                        }
+                                        if self.userReachesDislikeAreaThreshold(withDrag: dragWith) {
+                                            self.cardRemovalTransition = .leadingBottom
+                                        }
+                                    })
                                     .onEnded({ value in
                                         // If user perform a drag gesture, get the value on the drag? value
                                         guard case .second(true, let drag?) = value else {
@@ -130,6 +147,7 @@ struct ContentView: View {
                                         }
                                     })
                             )
+                            .transition(self.cardRemovalTransition)
                     }
                 }
             }
