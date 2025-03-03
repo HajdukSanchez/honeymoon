@@ -13,11 +13,12 @@ struct ContentView: View {
     @State var showAlert: Bool = false
     @State var showGuide: Bool = false
     @State var showInfo: Bool = false
+    @State private var lastCardIndex: Int = 1 // Strats in 1 because we start show 2 cards
     @GestureState private var dragState = DragState.inactive
     private var dragAreaThreshold: CGFloat = 65.0
     
     // MARK: - Cards
-    var cardViews: [CardView] = {
+    @State private var cardViews: [CardView] = {
         var views = [CardView]()
         // Only show 2 cards in the list
         for index in 0..<2 {
@@ -25,6 +26,19 @@ struct ContentView: View {
         }
         return views
     }()
+    
+    private func moveCards() {
+        // Remove the top card from the array (the card user is interact with)
+        self.cardViews.removeFirst()
+        // Track the new card user is seeing
+        self.lastCardIndex += 1
+        // This allow us to get the next card inside the boundaries of the array and always show a new card without exeed the bounds
+        let honeymoon = honeyMoonData[self.lastCardIndex % honeyMoonData.count]
+        // Using this new card to show, we append the next card on the array
+        let newCardView = CardView(honeymoon: honeymoon)
+        // Set the new card in the arrya so user can see it
+        self.cardViews.append(newCardView)
+    }
     
     // MARK: - Top card
     private func isTopCard(cardView: CardView) -> Bool {
@@ -36,12 +50,12 @@ struct ContentView: View {
         return index == 0
     }
     
-    private func showDislikeSymbol() -> Bool {
-        return self.dragState.translation.width < -self.dragAreaThreshold
+    private func userReachesDislikeAreaThreshold(withDrag dragWidth: CGFloat) -> Bool {
+        return dragWidth < -self.dragAreaThreshold
     }
     
-    private func showLikeSymbol() -> Bool {
-        return self.dragState.translation.width > self.dragAreaThreshold
+    private func userReachesLikeAreaThreshold(withDrag dragWidth: CGFloat) -> Bool {
+        return dragWidth > self.dragAreaThreshold
     }
     
     var body: some View {
@@ -66,12 +80,16 @@ struct ContentView: View {
                                     Image(systemName: "x.circle")
                                         .modifier(SymbolModifier())
                                         .foregroundStyle(.red)
-                                        .opacity(self.showDislikeSymbol() ? 1 : 0)
+                                        .opacity(
+                                            self.userReachesDislikeAreaThreshold(withDrag: self.dragState.translation.width) ? 1 : 0
+                                        )
                                     // Symbol on the right
                                     Image(systemName: "heart.circle")
                                         .modifier(SymbolModifier())
                                         .foregroundStyle(.green)
-                                        .opacity(self.showLikeSymbol() ? 1 : 0)
+                                        .opacity(
+                                            self.userReachesLikeAreaThreshold(withDrag: self.dragState.translation.width) ? 1 : 0
+                                        )
                                 }
                             })
                             .offset(
@@ -95,6 +113,20 @@ struct ContentView: View {
                                             state = .dragging(translation: drag?.translation ?? .zero)
                                         default:
                                             break
+                                        }
+                                    })
+                                    .onEnded({ value in
+                                        // If user perform a drag gesture, get the value on the drag? value
+                                        guard case .second(true, let drag?) = value else {
+                                            return
+                                        }
+                                        
+                                        let dragWith = drag.translation.width
+                                        
+                                        // Validate if the user reach the limits when we show the dislike or like actions, to perform a specific action apart
+                                        if  self.userReachesLikeAreaThreshold(withDrag: dragWith) || self.userReachesDislikeAreaThreshold(withDrag: dragWith) {
+                                            // Perform change cards action
+                                            self.moveCards()
                                         }
                                     })
                             )
