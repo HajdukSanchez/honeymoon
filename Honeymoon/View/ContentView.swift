@@ -142,6 +142,7 @@ struct ContentView: View {
                                         
                                         // Validate if the user reach the limits when we show the dislike or like actions, to perform a specific action apart
                                         if  self.userReachesLikeAreaThreshold(withDrag: dragWith) || self.userReachesDislikeAreaThreshold(withDrag: dragWith) {
+                                            playSound(name: "sound-rise", type: "mp3")
                                             // Perform change cards action
                                             self.moveCards()
                                         }
